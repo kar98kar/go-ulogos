@@ -219,6 +219,14 @@ func (self *StateDB) GetNonce(addr common.Address) uint64 {
 	return StartingNonce
 }
 
+func (self *StateDB) GetRoot(addr common.Address) string {
+	stateObject := self.getStateObject(addr)
+	if stateObject != nil {
+		return stateObject.data.Root.Hex()
+	}
+	return "0x"
+}
+
 func (self *StateDB) GetCode(addr common.Address) []byte {
 	stateObject := self.getStateObject(addr)
 	if stateObject != nil {

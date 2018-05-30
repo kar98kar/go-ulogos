@@ -118,7 +118,7 @@ func exec(env vm.Environment, caller vm.ContractRef, address, codeAddr *common.A
 	// calculate the gas required to store the code. If the code could not
 	// be stored due to not enough gas set an error and let it be handled
 	// by the error checking condition below.
-	if err == nil && createAccount {
+	if err == nil && createAccount && ret != nil {
 		dataGas := big.NewInt(int64(len(ret)))
 		// create data gas
 		dataGas.Mul(dataGas, big.NewInt(200))

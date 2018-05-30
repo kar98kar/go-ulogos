@@ -195,6 +195,11 @@ const (
 )
 
 const (
+	//0xc0 range
+	CLONE OpCode = 0xc0 + iota
+)
+
+const (
 	// 0xf0 range - closures
 	CREATE OpCode = 0xf0 + iota
 	CALL
@@ -349,6 +354,9 @@ var opCodeToString = map[OpCode]string{
 	LOG3:   "LOG3",
 	LOG4:   "LOG4",
 
+	// 0xc0 range
+	CLONE: "CLONE",
+
 	// 0xf0 range
 	CREATE:       "CREATE",
 	CALL:         "CALL",
@@ -497,6 +505,7 @@ var stringToOp = map[string]OpCode{
 	"LOG2":         LOG2,
 	"LOG3":         LOG3,
 	"LOG4":         LOG4,
+	"CLONE":        CLONE,
 	"CREATE":       CREATE,
 	"CALL":         CALL,
 	"RETURN":       RETURN,

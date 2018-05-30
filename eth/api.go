@@ -748,7 +748,7 @@ func (s *PublicBlockChainAPI) GetStorageAt(address common.Address, key string, b
 	}
 
 	if key == "Root" {
-		return state.GetRoot(address), nil
+		return state.GetRoot(address).Hex(), nil
 	}
 
 	return state.GetState(address, common.HexToHash(key)).Hex(), nil

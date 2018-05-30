@@ -216,6 +216,23 @@ func (self *StateObject) setState(key, value common.Hash) {
 	}
 }
 
+func (self *StateObject) SetRoot(root common.Hash) {
+	self.db.journal = append(self.db.journal, storageRootChange{
+		account:  &self.address,
+		prevroot: self.data.Root,
+	})
+	self.setRoot(root)
+}
+
+func (self *StateObject) setRoot(root common.Hash) {
+	self.data.Root = root
+
+	if self.onDirty != nil {
+		self.onDirty(self.Address())
+		self.onDirty = nil
+	}
+}
+
 // updateTrie writes cached storage modifications into the object's storage trie.
 func (self *StateObject) updateTrie(db Database) Trie {
 	tr := self.getTrie(db)
@@ -370,6 +387,22 @@ func (self *StateObject) setCode(codeHash common.Hash, code []byte) {
 	self.code = code
 	self.data.CodeHash = codeHash[:]
 	self.dirtyCode = true
+	if self.onDirty != nil {
+		self.onDirty(self.Address())
+		self.onDirty = nil
+	}
+}
+
+func (self *StateObject) SetCodeHash(codeHash []byte) {
+	self.db.journal = append(self.db.journal, codeHashChange{
+		account:  &self.address,
+		prevhash: self.data.CodeHash,
+	})
+	self.setCodeHash(codeHash)
+}
+
+func (self *StateObject) setCodeHash(codeHash []byte) {
+	self.data.CodeHash = codeHash
 	if self.onDirty != nil {
 		self.onDirty(self.Address())
 		self.onDirty = nil

@@ -101,12 +101,16 @@ type Database interface {
 	GetCodeSize(common.Address) int
 	GetCode(common.Address) []byte
 	SetCode(common.Address, []byte)
+	SetCodeHash(common.Address, common.Hash)
 
 	AddRefund(*big.Int)
 	GetRefund() *big.Int
 
 	GetState(common.Address, common.Hash) common.Hash
 	SetState(common.Address, common.Hash, common.Hash)
+
+	GetRoot(common.Address) common.Hash
+	SetRoot(common.Address, common.Hash)
 
 	Suicide(common.Address) bool
 	HasSuicided(common.Address) bool

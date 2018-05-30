@@ -316,6 +316,8 @@ func calculateGasAndSize(gasTable *GasTable, env Environment, contract *Contract
 		gas.Add(gas, words.Mul(words, big.NewInt(3)))
 
 		quadMemGas(mem, newMemSize, gas)
+	case CLONE:
+		gas.Set(big.NewInt(40000))
 	case CREATE:
 		newMemSize = calcMemSize(stack.data[stack.len()-2], stack.data[stack.len()-3])
 

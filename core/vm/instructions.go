@@ -408,6 +408,14 @@ func opGas(instr instruction, pc *uint64, env Environment, contract *Contract, m
 	stack.push(new(big.Int).Set(contract.Gas))
 }
 
+func opClone(instr instruction, pc *uint64, env Environment, contract *Contract, memory *Memory, stack *stack) {
+	addr := common.BigToAddress(stack.pop())
+	root := env.Db().GetRoot(addr)
+	codehash := env.Db().GetCodeHash(addr)
+	env.Db().SetRoot(contract.Address(), root)
+	env.Db().SetCodeHash(contract.Address(), codehash)
+}
+
 func opCreate(instr instruction, pc *uint64, env Environment, contract *Contract, memory *Memory, stack *stack) {
 	var (
 		value        = stack.pop()

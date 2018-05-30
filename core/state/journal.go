@@ -55,9 +55,17 @@ type (
 		account       *common.Address
 		key, prevalue common.Hash
 	}
+	storageRootChange struct {
+		account  *common.Address
+		prevroot common.Hash
+	}
 	codeChange struct {
 		account            *common.Address
 		prevcode, prevhash []byte
+	}
+	codeHashChange struct {
+		account  *common.Address
+		prevhash []byte
 	}
 
 	// Changes to other state values.
@@ -117,8 +125,16 @@ func (ch codeChange) undo(s *StateDB) {
 	s.getStateObject(*ch.account).setCode(common.BytesToHash(ch.prevhash), ch.prevcode)
 }
 
+func (ch codeHashChange) undo(s *StateDB) {
+	s.getStateObject(*ch.account).setCodeHash(ch.prevhash)
+}
+
 func (ch storageChange) undo(s *StateDB) {
 	s.getStateObject(*ch.account).setState(ch.key, ch.prevalue)
+}
+
+func (ch storageRootChange) undo(s *StateDB) {
+	s.getStateObject(*ch.account).setRoot(ch.prevroot)
 }
 
 func (ch refundChange) undo(s *StateDB) {

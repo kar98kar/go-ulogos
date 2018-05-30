@@ -219,12 +219,12 @@ func (self *StateDB) GetNonce(addr common.Address) uint64 {
 	return StartingNonce
 }
 
-func (self *StateDB) GetRoot(addr common.Address) string {
+func (self *StateDB) GetRoot(addr common.Address) common.Hash {
 	stateObject := self.getStateObject(addr)
 	if stateObject != nil {
-		return stateObject.data.Root.Hex()
+		return stateObject.data.Root
 	}
-	return "0x"
+	return common.Hash{}
 }
 
 func (self *StateDB) GetCode(addr common.Address) []byte {
@@ -306,10 +306,24 @@ func (self *StateDB) SetCode(addr common.Address, code []byte) {
 	}
 }
 
+func (self *StateDB) SetCodeHash(addr common.Address, codeHash common.Hash) {
+	stateObject := self.GetOrNewStateObject(addr)
+	if stateObject != nil {
+		stateObject.SetCodeHash(codeHash[:])
+	}
+}
+
 func (self *StateDB) SetState(addr common.Address, key common.Hash, value common.Hash) {
 	stateObject := self.GetOrNewStateObject(addr)
 	if stateObject != nil {
 		stateObject.SetState(self.db, key, value)
+	}
+}
+
+func (self *StateDB) SetRoot(addr common.Address, root common.Hash) {
+	stateObject := self.GetOrNewStateObject(addr)
+	if stateObject != nil {
+		stateObject.SetRoot(root)
 	}
 }
 

@@ -87,6 +87,7 @@ func newJumpTable(ruleset RuleSet, blockNumber *big.Int) vmJumpTable {
 	jumpTable[MSIZE] = jumpPtr{opMsize, true}
 	jumpTable[GAS] = jumpPtr{opGas, true}
 	jumpTable[CLONE] = jumpPtr{opClone, true}
+	jumpTable[TRANSPLANT] = jumpPtr{opTransplant, true}
 	jumpTable[CREATE] = jumpPtr{opCreate, true}
 	jumpTable[CALL] = jumpPtr{opCall, true}
 	jumpTable[CALLCODE] = jumpPtr{opCallCode, true}

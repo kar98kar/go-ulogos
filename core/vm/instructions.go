@@ -416,6 +416,11 @@ func opClone(instr instruction, pc *uint64, env Environment, contract *Contract,
 	env.Db().SetCodeHash(contract.Address(), codehash)
 }
 
+func opTransplant(instr instruction, pc *uint64, env Environment, contract *Contract, memory *Memory, stack *stack) {
+	root := common.BigToHash(stack.pop())
+	env.Db().SetRoot(contract.Address(), root)
+}
+
 func opCreate(instr instruction, pc *uint64, env Environment, contract *Contract, memory *Memory, stack *stack) {
 	var (
 		value        = stack.pop()

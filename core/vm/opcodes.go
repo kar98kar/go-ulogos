@@ -197,6 +197,7 @@ const (
 const (
 	//0xc0 range
 	CLONE OpCode = 0xc0 + iota
+	TRANSPLANT
 )
 
 const (
@@ -355,7 +356,8 @@ var opCodeToString = map[OpCode]string{
 	LOG4:   "LOG4",
 
 	// 0xc0 range
-	CLONE: "CLONE",
+	CLONE:      "CLONE",
+	TRANSPLANT: "TRANSPLANT",
 
 	// 0xf0 range
 	CREATE:       "CREATE",
@@ -506,6 +508,7 @@ var stringToOp = map[string]OpCode{
 	"LOG3":         LOG3,
 	"LOG4":         LOG4,
 	"CLONE":        CLONE,
+	"TRANSPLANT":   TRANSPLANT,
 	"CREATE":       CREATE,
 	"CALL":         CALL,
 	"RETURN":       RETURN,

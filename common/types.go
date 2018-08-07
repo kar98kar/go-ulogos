@@ -29,7 +29,7 @@ import (
 
 const (
 	HashLength    = 32
-	AddressLength = 20
+	AddressLength = 21
 )
 
 var hashJsonLengthErr = errors.New("common: unmarshalJSON failed: hash must be exactly 32 bytes")

@@ -59,7 +59,7 @@ func Sha3Hash(data ...[]byte) common.Hash { return Keccak256Hash(data...) }
 // Creates an ethereum address given the bytes and the nonce
 func CreateAddress(b common.Address, nonce uint64) common.Address {
 	data, _ := rlp.EncodeToBytes([]interface{}{b, nonce})
-	return common.BytesToAddress(Keccak256(data)[12:])
+	return common.BytesToAddress(append([]byte{68}, Keccak256(data)[12:]...))
 }
 
 func Sha256(data []byte) []byte {
@@ -206,7 +206,7 @@ func Decrypt(prv *ecdsa.PrivateKey, ct []byte) ([]byte, error) {
 
 func PubkeyToAddress(p ecdsa.PublicKey) common.Address {
 	pubBytes := FromECDSAPub(&p)
-	return common.BytesToAddress(Keccak256(pubBytes[1:])[12:])
+	return common.BytesToAddress(append([]byte{0}, Keccak256(pubBytes[1:])[12:]...))
 }
 
 func zeroBytes(bytes []byte) {

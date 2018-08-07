@@ -171,7 +171,7 @@ func TestSimpleMethodUnpack(t *testing.T) {
 
 		{
 			`[ { "type": "address" } ]`,
-			pad(pad([]byte{1}, 20, false), 32, true),
+			pad(pad([]byte{1}, 21, false), 32, true),
 			common.Address{1},
 			"address",
 			"",
@@ -331,7 +331,7 @@ func TestPack(t *testing.T) {
 		{"uint16[]", []uint16{1, 2}, formatSliceOutput([]byte{1}, []byte{2})},
 		{"bytes20", [20]byte{1}, pad([]byte{1}, 32, false)},
 		{"uint256[]", []*big.Int{big.NewInt(1), big.NewInt(2)}, formatSliceOutput([]byte{1}, []byte{2})},
-		{"address[]", []common.Address{{1}, {2}}, formatSliceOutput(pad([]byte{1}, 20, false), pad([]byte{2}, 20, false))},
+		{"address[]", []common.Address{{1}, {2}}, formatSliceOutput(pad([]byte{1}, 21, false), pad([]byte{2}, 21, false))},
 		{"bytes32[]", []common.Hash{{1}, {2}}, formatSliceOutput(pad([]byte{1}, 32, false), pad([]byte{2}, 32, false))},
 	} {
 		typ, err := NewType(test.typ)

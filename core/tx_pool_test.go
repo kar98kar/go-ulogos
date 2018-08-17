@@ -30,7 +30,7 @@ import (
 )
 
 func transaction(nonce uint64, gaslimit *big.Int, key *ecdsa.PrivateKey) *types.Transaction {
-	tx, _ := types.NewTransaction(nonce, common.Address{}, big.NewInt(100), gaslimit, big.NewInt(1), nil).SignECDSA(key)
+	tx, _ := types.NewTransaction(nonce, common.Address{}, big.NewInt(100), gaslimit, big.NewInt(1), nil, 0x21).SignECDSA(key)
 	return tx
 }
 
@@ -166,7 +166,7 @@ func TestRemoveTx(t *testing.T) {
 func TestNegativeValue(t *testing.T) {
 	pool, key := setupTxPool()
 
-	tx, _ := types.NewTransaction(0, common.Address{}, big.NewInt(-1), big.NewInt(100), big.NewInt(1), nil).SignECDSA(key)
+	tx, _ := types.NewTransaction(0, common.Address{}, big.NewInt(-1), big.NewInt(100), big.NewInt(1), nil, 0x21).SignECDSA(key)
 	from, _ := deriveSender(tx)
 	currentState, _ := pool.currentState()
 	currentState.AddBalance(from, big.NewInt(1))

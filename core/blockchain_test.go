@@ -26,6 +26,9 @@ import (
 	"testing"
 	"time"
 
+	"io/ioutil"
+	"strings"
+
 	"github.com/ethereumproject/ethash"
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/core/state"
@@ -37,8 +40,6 @@ import (
 	"github.com/ethereumproject/go-ethereum/logger/glog"
 	"github.com/ethereumproject/go-ethereum/rlp"
 	"github.com/hashicorp/golang-lru"
-	"io/ioutil"
-	"strings"
 )
 
 func init() {
@@ -811,7 +812,7 @@ func TestFastVsFullChains(t *testing.T) {
 		// If the block number is multiple of 3, send a few bonus transactions to the miner
 		if i%3 == 2 {
 			for j := 0; j < i%4+1; j++ {
-				tx, err := types.NewTransaction(block.TxNonce(address), common.Address{0x00}, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key)
+				tx, err := types.NewTransaction(block.TxNonce(address), common.Address{0x00}, big.NewInt(1000), TxGas, nil, nil, address[0]).WithSigner(signer).SignECDSA(key)
 				if err != nil {
 					panic(err)
 				}
@@ -931,15 +932,15 @@ func TestFastVsFullChainsATXI(t *testing.T) {
 	)
 
 	for i, db := range dbs {
-		t1, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+		t1, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 		if err != nil {
 			t.Fatal(err)
 		}
-		t2, err := types.NewTransaction(1, addr2, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+		t2, err := types.NewTransaction(1, addr2, big.NewInt(1000), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 		if err != nil {
 			t.Fatal(err)
 		}
-		t3, err := types.NewTransaction(0, addr1, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key2)
+		t3, err := types.NewTransaction(0, addr1, big.NewInt(1000), TxGas, nil, nil, addr2[0]).WithSigner(signer).SignECDSA(key2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1044,15 +1045,15 @@ func TestRmAddrTx(t *testing.T) {
 		config = MakeDiehardChainConfig()
 	)
 
-	t1, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+	t1, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t2, err := types.NewTransaction(1, addr2, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+	t2, err := types.NewTransaction(1, addr2, big.NewInt(1000), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t3, err := types.NewTransaction(0, addr1, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key2)
+	t3, err := types.NewTransaction(0, addr1, big.NewInt(1000), TxGas, nil, nil, addr2[0]).WithSigner(signer).SignECDSA(key2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1250,11 +1251,11 @@ func testChainTxReorgs(t *testing.T, db ethdb.Database, withATXI bool) {
 	// addr1 -> addr2
 	//  - postponed: transaction included at a later block in the forked chain
 	//  - swapped: transaction included at the same block number in the forked chain
-	postponed, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+	postponed, err := types.NewTransaction(0, addr2, big.NewInt(1000), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	swapped, err := types.NewTransaction(1, addr2, big.NewInt(1001), TxGas, nil, nil).WithSigner(signer).SignECDSA(key1)
+	swapped, err := types.NewTransaction(1, addr2, big.NewInt(1001), TxGas, nil, nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1281,13 +1282,13 @@ func testChainTxReorgs(t *testing.T, db ethdb.Database, withATXI bool) {
 	chain, _ := GenerateChain(chainConfig, genesis, db, 3, func(i int, gen *BlockGen) {
 		switch i {
 		case 0:
-			pastDrop, _ = types.NewTransaction(gen.TxNonce(addr2), addr3, big.NewInt(1002), TxGas, nil, nil).WithSigner(signer).SignECDSA(key2)
+			pastDrop, _ = types.NewTransaction(gen.TxNonce(addr2), addr3, big.NewInt(1002), TxGas, nil, nil, addr2[0]).WithSigner(signer).SignECDSA(key2)
 
 			gen.AddTx(pastDrop)  // This transaction will be dropped in the fork from below the split point
 			gen.AddTx(postponed) // This transaction will be postponed till block #3 in the fork
 
 		case 2:
-			freshDrop, _ = types.NewTransaction(gen.TxNonce(addr2), addr3, big.NewInt(1003), TxGas, nil, nil).WithSigner(signer).SignECDSA(key2)
+			freshDrop, _ = types.NewTransaction(gen.TxNonce(addr2), addr3, big.NewInt(1003), TxGas, nil, nil, addr2[0]).WithSigner(signer).SignECDSA(key2)
 
 			gen.AddTx(freshDrop) // This transaction will be dropped in the fork from exactly at the split point
 			gen.AddTx(swapped)   // This transaction will be swapped out at the exact height
@@ -1313,18 +1314,18 @@ func testChainTxReorgs(t *testing.T, db ethdb.Database, withATXI bool) {
 	chain, _ = GenerateChain(chainConfig, genesis, db, 5, func(i int, gen *BlockGen) {
 		switch i {
 		case 0:
-			pastAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1004), TxGas, nil, nil).WithSigner(signer).SignECDSA(key3)
+			pastAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1004), TxGas, nil, nil, addr3[0]).WithSigner(signer).SignECDSA(key3)
 			gen.AddTx(pastAdd) // This transaction needs to be injected during reorg
 
 		case 2:
 			gen.AddTx(postponed) // This transaction was postponed from block #1 in the original chain
 			gen.AddTx(swapped)   // This transaction was swapped from the exact current spot in the original chain
 
-			freshAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1005), TxGas, nil, nil).WithSigner(signer).SignECDSA(key3)
+			freshAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1005), TxGas, nil, nil, addr3[0]).WithSigner(signer).SignECDSA(key3)
 			gen.AddTx(freshAdd) // This transaction will be added exactly at reorg time
 
 		case 3:
-			futureAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1006), TxGas, nil, nil).WithSigner(signer).SignECDSA(key3)
+			futureAdd, _ = types.NewTransaction(gen.TxNonce(addr3), addr1, big.NewInt(1006), TxGas, nil, nil, addr3[0]).WithSigner(signer).SignECDSA(key3)
 			gen.AddTx(futureAdd) // This transaction will be added after a full reorg
 		}
 	})
@@ -1454,7 +1455,7 @@ func TestLogReorgs(t *testing.T) {
 	subs := evmux.Subscribe(RemovedLogsEvent{})
 	chain, _ := GenerateChain(chainConfig, genesis, db, 2, func(i int, gen *BlockGen) {
 		if i == 1 {
-			tx, err := types.NewContractCreation(gen.TxNonce(addr1), new(big.Int), big.NewInt(1000000), new(big.Int), code).WithSigner(signer).SignECDSA(key1)
+			tx, err := types.NewContractCreation(gen.TxNonce(addr1), new(big.Int), big.NewInt(1000000), new(big.Int), code, addr1[0]).WithSigner(signer).SignECDSA(key1)
 			if err != nil {
 				t.Fatalf("failed to create tx: %v", err)
 			}
@@ -1513,7 +1514,7 @@ func TestReorgSideEvent(t *testing.T) {
 	}
 
 	replacementBlocks, _ := GenerateChain(blockchain.config, genesis, db, 4, func(i int, gen *BlockGen) {
-		tx, err := types.NewContractCreation(gen.TxNonce(addr1), new(big.Int), big.NewInt(1000000), new(big.Int), nil).WithSigner(signer).SignECDSA(key1)
+		tx, err := types.NewContractCreation(gen.TxNonce(addr1), new(big.Int), big.NewInt(1000000), new(big.Int), nil, addr1[0]).WithSigner(signer).SignECDSA(key1)
 		if i == 2 {
 			gen.OffsetTime(-1)
 		}
@@ -1690,7 +1691,7 @@ func TestEIP155Transition(t *testing.T) {
 			tx      *types.Transaction
 			err     error
 			basicTx = func(signer types.Signer) (*types.Transaction, error) {
-				tx := types.NewTransaction(block.TxNonce(address), common.Address{}, new(big.Int), big.NewInt(21000), new(big.Int), nil)
+				tx := types.NewTransaction(block.TxNonce(address), common.Address{}, new(big.Int), big.NewInt(21000), new(big.Int), nil, address[0])
 				tx.SetSigner(signer)
 				return tx.SignECDSA(key)
 			}
@@ -1801,7 +1802,7 @@ func TestEIP155Transition(t *testing.T) {
 			tx      *types.Transaction
 			err     error
 			basicTx = func(signer types.Signer) (*types.Transaction, error) {
-				tx := types.NewTransaction(block.TxNonce(address), common.Address{}, new(big.Int), big.NewInt(21000), new(big.Int), nil)
+				tx := types.NewTransaction(block.TxNonce(address), common.Address{}, new(big.Int), big.NewInt(21000), new(big.Int), nil, address[0])
 				tx.SetSigner(signer)
 				return tx.SignECDSA(key)
 			}

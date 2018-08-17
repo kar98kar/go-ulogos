@@ -272,9 +272,9 @@ func (be *registryAPIBackend) Transact(fromStr, toStr, nonceStr, valueStr, gasSt
 
 	var tx *types.Transaction
 	if toStr == "" {
-		tx = types.NewContractCreation(nonce, value, gas, gasPrice, data)
+		tx = types.NewContractCreation(nonce, value, gas, gasPrice, data, from[0])
 	} else {
-		tx = types.NewTransaction(nonce, to, value, gas, gasPrice, data)
+		tx = types.NewTransaction(nonce, to, value, gas, gasPrice, data, from[0])
 	}
 
 	sigHash := (types.BasicSigner{}).Hash(tx)

@@ -94,7 +94,12 @@ func Sender(signer Signer, tx *Transaction) (common.Address, error) {
 		return common.Address{}, err
 	}
 	var addr common.Address
-	copy(addr[:], append([]byte{0x21}, crypto.Keccak256(pubkey[1:])[12:]...))
+	if tx.data.SenderType == 0x21 {
+		addr = crypto.PubkeyToAddress(*crypto.ToECDSAPub(pubkey))
+	} else {
+		addr = crypto.PubkeyToAddressPrefixed(*crypto.ToECDSAPub(pubkey), tx.data.SenderType)
+	}
+
 	tx.from.Store(sigCache{signer: signer, from: addr})
 	return addr, nil
 }
@@ -215,6 +220,7 @@ func (s ChainIdSigner) Hash(tx *Transaction) common.Hash {
 		tx.data.Recipient,
 		tx.data.Amount,
 		tx.data.Payload,
+		tx.data.SenderType,
 		s.chainId, uint(0), uint(0),
 	})
 }
@@ -267,6 +273,7 @@ func (fs BasicSigner) Hash(tx *Transaction) common.Hash {
 		tx.data.Recipient,
 		tx.data.Amount,
 		tx.data.Payload,
+		tx.data.SenderType,
 	})
 }
 

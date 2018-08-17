@@ -13,7 +13,7 @@ import (
 func TestChainId(t *testing.T) {
 	key, _ := defaultTestKey()
 
-	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil)
+	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil, 0x21)
 	tx.SetSigner(NewChainIdSigner(big.NewInt(1)))
 
 	var err error
@@ -38,7 +38,7 @@ func TestChainId(t *testing.T) {
 func TestClassicChainId(t *testing.T) {
 	key, _ := defaultTestKey()
 
-	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil)
+	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil, 0x21)
 	tx.SetSigner(NewChainIdSigner(big.NewInt(61)))
 
 	txs, err := tx.SignECDSA(key)
@@ -69,7 +69,7 @@ func TestClassicChainId(t *testing.T) {
 func TestMordenChainId(t *testing.T) {
 	key, _ := defaultTestKey()
 
-	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil)
+	tx := NewTransaction(0, common.Address{}, new(big.Int), new(big.Int), new(big.Int), nil, 0x21)
 	tx.SetSigner(NewChainIdSigner(big.NewInt(62)))
 
 	txs, err := tx.SignECDSA(key)
@@ -106,9 +106,9 @@ func TestCompatibleSign(t *testing.T) {
 	pub := crypto.FromECDSAPub(&priv.PublicKey)
 	addr := crypto.PubkeyToAddress(priv.PublicKey)
 
-	tx := NewTransaction(0, addr, new(big.Int), new(big.Int), new(big.Int), nil)
+	tx := NewTransaction(0, addr, new(big.Int), new(big.Int), new(big.Int), nil, 0x21)
 	tx.SetSigner(NewChainIdSigner(big.NewInt(61)))
-	tx2 := NewTransaction(0, addr, new(big.Int), new(big.Int), new(big.Int), nil)
+	tx2 := NewTransaction(0, addr, new(big.Int), new(big.Int), new(big.Int), nil, 0x21)
 	tx2.SetSigner(BasicSigner{})
 
 	tx, err = tx.SignECDSA(priv)

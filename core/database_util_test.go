@@ -28,6 +28,8 @@ import (
 
 	"crypto/ecdsa"
 	"encoding/binary"
+	"strings"
+
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/core/types"
 	"github.com/ethereumproject/go-ethereum/core/vm"
@@ -35,7 +37,6 @@ import (
 	"github.com/ethereumproject/go-ethereum/crypto/sha3"
 	"github.com/ethereumproject/go-ethereum/ethdb"
 	"github.com/ethereumproject/go-ethereum/rlp"
-	"strings"
 )
 
 type diffTest struct {
@@ -321,12 +322,12 @@ func TestAddrTxStorage(t *testing.T) {
 	from2to := common.BytesToAddress([]byte{0x22})
 
 	// from1 -> 1
-	tx1 := types.NewTransaction(1, common.BytesToAddress([]byte{0x11}), big.NewInt(111), big.NewInt(1111), big.NewInt(11111), []byte{0x11, 0x11, 0x11})
+	tx1 := types.NewTransaction(1, common.BytesToAddress([]byte{0x11}), big.NewInt(111), big.NewInt(1111), big.NewInt(11111), []byte{0x11, 0x11, 0x11}, from1[0])
 
 	// from2 -> 2,3,txC
-	tx2 := types.NewTransaction(2, from2to, big.NewInt(222), big.NewInt(2222), big.NewInt(22222), []byte{0x22, 0x22, 0x22})
-	tx3 := types.NewTransaction(3, common.BytesToAddress([]byte{0x33}), big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33})
-	txC := types.NewTransaction(4, common.Address{}, big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33})
+	tx2 := types.NewTransaction(2, from2to, big.NewInt(222), big.NewInt(2222), big.NewInt(22222), []byte{0x22, 0x22, 0x22}, from2[0])
+	tx3 := types.NewTransaction(3, common.BytesToAddress([]byte{0x33}), big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33}, from2[0])
+	txC := types.NewTransaction(4, common.Address{}, big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33}, from2[0])
 
 	txs := []*types.Transaction{tx1, tx2, tx3, txC}
 	txsSigned := []*types.Transaction{}
@@ -604,9 +605,9 @@ func TestHeadStorage(t *testing.T) {
 func TestTransactionStorage(t *testing.T) {
 	db, _ := ethdb.NewMemDatabase()
 
-	tx1 := types.NewTransaction(1, common.BytesToAddress([]byte{0x11}), big.NewInt(111), big.NewInt(1111), big.NewInt(11111), []byte{0x11, 0x11, 0x11})
-	tx2 := types.NewTransaction(2, common.BytesToAddress([]byte{0x22}), big.NewInt(222), big.NewInt(2222), big.NewInt(22222), []byte{0x22, 0x22, 0x22})
-	tx3 := types.NewTransaction(3, common.BytesToAddress([]byte{0x33}), big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33})
+	tx1 := types.NewTransaction(1, common.BytesToAddress([]byte{0x11}), big.NewInt(111), big.NewInt(1111), big.NewInt(11111), []byte{0x11, 0x11, 0x11}, 0x21)
+	tx2 := types.NewTransaction(2, common.BytesToAddress([]byte{0x22}), big.NewInt(222), big.NewInt(2222), big.NewInt(22222), []byte{0x22, 0x22, 0x22}, 0x21)
+	tx3 := types.NewTransaction(3, common.BytesToAddress([]byte{0x33}), big.NewInt(333), big.NewInt(3333), big.NewInt(33333), []byte{0x33, 0x33, 0x33}, 0x21)
 	txs := []*types.Transaction{tx1, tx2, tx3}
 
 	block := types.NewBlock(&types.Header{Number: big.NewInt(314)}, txs, nil, nil)

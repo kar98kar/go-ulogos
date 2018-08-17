@@ -316,13 +316,13 @@ func testGetNodeData(t *testing.T, protocol int) {
 		switch i {
 		case 0:
 			// In block 1, the test bank sends account #1 some ether.
-			tx, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(10000), core.TxGas, nil, nil).SignECDSA(testBankKey)
+			tx, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(10000), core.TxGas, nil, nil, testBank.Address[0]).SignECDSA(testBankKey)
 			block.AddTx(tx)
 		case 1:
 			// In block 2, the test bank sends some more ether to account #1.
 			// acc1Addr passes it on to account #2.
-			tx1, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(1000), core.TxGas, nil, nil).SignECDSA(testBankKey)
-			tx2, _ := types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1000), core.TxGas, nil, nil).SignECDSA(acc1Key)
+			tx1, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(1000), core.TxGas, nil, nil, testBank.Address[0]).SignECDSA(testBankKey)
+			tx2, _ := types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1000), core.TxGas, nil, nil, acc1Addr[0]).SignECDSA(acc1Key)
 			block.AddTx(tx1)
 			block.AddTx(tx2)
 		case 2:
@@ -410,13 +410,13 @@ func testGetReceipt(t *testing.T, protocol int) {
 		switch i {
 		case 0:
 			// In block 1, the test bank sends account #1 some ether.
-			tx, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(10000), core.TxGas, nil, nil).SignECDSA(testBankKey)
+			tx, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(10000), core.TxGas, nil, nil, testBank.Address[0]).SignECDSA(testBankKey)
 			block.AddTx(tx)
 		case 1:
 			// In block 2, the test bank sends some more ether to account #1.
 			// acc1Addr passes it on to account #2.
-			tx1, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(1000), core.TxGas, nil, nil).SignECDSA(testBankKey)
-			tx2, _ := types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1000), core.TxGas, nil, nil).SignECDSA(acc1Key)
+			tx1, _ := types.NewTransaction(block.TxNonce(testBank.Address), acc1Addr, big.NewInt(1000), core.TxGas, nil, nil, testBank.Address[0]).SignECDSA(testBankKey)
+			tx2, _ := types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1000), core.TxGas, nil, nil, acc1Addr[0]).SignECDSA(acc1Key)
 			block.AddTx(tx1)
 			block.AddTx(tx2)
 		case 2:

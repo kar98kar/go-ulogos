@@ -36,6 +36,7 @@ var (
 		common.HexToAddress("095e7baea6a6c7c4c2dfeb977efac326af552d87"),
 		big.NewInt(0), big.NewInt(0), big.NewInt(0),
 		nil,
+		0x21,
 	)
 
 	rightvrsTx, _ = NewTransaction(
@@ -45,6 +46,7 @@ var (
 		big.NewInt(2000),
 		big.NewInt(1),
 		common.FromHex("5544"),
+		0x21,
 	).WithSignature(
 		common.Hex2Bytes("98ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4a8887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a301"),
 	)
@@ -131,7 +133,7 @@ func TestTransactionPriceNonceSort(t *testing.T) {
 	txs := []*Transaction{}
 	for start, key := range keys {
 		for i := 0; i < 25; i++ {
-			tx, _ := NewTransaction(uint64(start+i), common.Address{}, big.NewInt(100), big.NewInt(100), big.NewInt(int64(start+i)), nil).SignECDSA(key)
+			tx, _ := NewTransaction(uint64(start+i), common.Address{}, big.NewInt(100), big.NewInt(100), big.NewInt(int64(start+i)), nil, 0x21).SignECDSA(key)
 			txs = append(txs, tx)
 		}
 	}

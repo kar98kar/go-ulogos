@@ -48,9 +48,10 @@ type txdata struct {
 	Amount          *big.Int
 	Payload         []byte
 	V, R, S         *big.Int // signature
+	SenderType      byte
 }
 
-func NewContractCreation(nonce uint64, amount, gasLimit, gasPrice *big.Int, data []byte) *Transaction {
+func NewContractCreation(nonce uint64, amount, gasLimit, gasPrice *big.Int, data []byte, SenderType byte) *Transaction {
 	if len(data) > 0 {
 		data = common.CopyBytes(data)
 	}
@@ -66,12 +67,13 @@ func NewContractCreation(nonce uint64, amount, gasLimit, gasPrice *big.Int, data
 			V:            new(big.Int),
 			R:            new(big.Int),
 			S:            new(big.Int),
+			SenderType:   SenderType,
 		},
 	}
 
 }
 
-func NewTransaction(nonce uint64, to common.Address, amount, gasLimit, gasPrice *big.Int, data []byte) *Transaction {
+func NewTransaction(nonce uint64, to common.Address, amount, gasLimit, gasPrice *big.Int, data []byte, SenderType byte) *Transaction {
 	if len(data) > 0 {
 		data = common.CopyBytes(data)
 	}
@@ -85,6 +87,7 @@ func NewTransaction(nonce uint64, to common.Address, amount, gasLimit, gasPrice 
 		V:            new(big.Int),
 		R:            new(big.Int),
 		S:            new(big.Int),
+		SenderType:   SenderType,
 	}
 	if amount != nil {
 		d.Amount.Set(amount)

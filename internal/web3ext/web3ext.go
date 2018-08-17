@@ -383,6 +383,11 @@ web3._extend({
 			params: 2
 		}),
 		new web3._extend.Method({
+			name: 'ImportWIFKey',
+			call: 'personal_ImportWIFKey',
+			params: 2
+		}),
+		new web3._extend.Method({
 			name: 'signAndSendTransaction',
 			call: 'personal_signAndSendTransaction',
 			params: 2,

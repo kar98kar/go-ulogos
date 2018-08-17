@@ -33,6 +33,7 @@ import (
 
 	"github.com/ethereumproject/ethash"
 	"github.com/ethereumproject/go-ethereum/accounts"
+	"github.com/ethereumproject/go-ethereum/accounts/base58"
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/common/compiler"
 	"github.com/ethereumproject/go-ethereum/common/hexutil"
@@ -41,6 +42,7 @@ import (
 	"github.com/ethereumproject/go-ethereum/core/types"
 	"github.com/ethereumproject/go-ethereum/core/vm"
 	"github.com/ethereumproject/go-ethereum/crypto"
+	"github.com/ethereumproject/go-ethereum/crypto/chainhash"
 	"github.com/ethereumproject/go-ethereum/ethdb"
 	"github.com/ethereumproject/go-ethereum/event"
 	"github.com/ethereumproject/go-ethereum/logger"
@@ -474,6 +476,47 @@ func (s *PrivateAccountAPI) ImportRawKey(privkey string, password string) (commo
 
 	acc, err := s.am.ImportECDSA(crypto.ToECDSA(hexkey), password)
 	return acc.Address, err
+}
+
+// ImportWIFKey stores the given WIF encoded ECDSA key into the key directory,
+// encrypting it with the passphrase.
+func (s *PrivateAccountAPI) ImportWIFKey(wif string, password string) (string, error) {
+	decoded := base58.Decode(wif)
+	decodedLen := len(decoded)
+	var compress byte
+
+	// Length of base58 decoded WIF must be 32 bytes + an optional 1 byte
+	// (0x01) if compressed, plus 1 byte for netID + 4 bytes of checksum.
+	switch decodedLen {
+	case 1 + 32 + 1 + 4:
+		if decoded[33] != 0x01 {
+			return "invalid WIF key compressed flag", nil
+		}
+		compress = 0x01
+	case 1 + 32 + 4:
+		compress = 0x00
+	default:
+		return "invalid WIF key", nil
+	}
+
+	// Checksum is first four bytes of double SHA256 of the identifier byte
+	// and privKey.  Verify this matches the final 4 bytes of the decoded
+	// private key.
+	var tosum []byte
+	if compress == 0x01 {
+		tosum = decoded[:1+32+1]
+	} else {
+		tosum = decoded[:1+32]
+	}
+	cksum := chainhash.DoubleHashB(tosum)[:4]
+	if !bytes.Equal(cksum, decoded[decodedLen-4:]) {
+		return "invalid WIF Checksum", nil
+	}
+
+	privKeyBytes := decoded[1 : 1+32]
+
+	acc, err := s.am.ImportECDSAPrefixed(crypto.ToECDSA(privKeyBytes), password, compress)
+	return base58.CheckEncode(acc.Address[1:], 0x00), err
 }
 
 // UnlockAccount will unlock the account associated with the given address with

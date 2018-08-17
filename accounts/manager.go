@@ -358,6 +358,20 @@ func (am *Manager) ImportECDSA(priv *ecdsa.PrivateKey, passphrase string) (Accou
 	return am.importKey(key, passphrase)
 }
 
+// ImportECDSA stores the given key into the key directory with a prefix, encrypting it with the passphrase.
+func (am *Manager) ImportECDSAPrefixed(priv *ecdsa.PrivateKey, passphrase string, pref byte) (Account, error) {
+	key, err := newKeyFromECDSAPrefixed(priv, pref)
+	if err != nil {
+		return Account{}, err
+	}
+
+	if am.ac.hasAddress(key.Address) {
+		return Account{}, fmt.Errorf("account already exists")
+	}
+
+	return am.importKey(key, passphrase)
+}
+
 func (am *Manager) importKey(key *key, passphrase string) (Account, error) {
 	file, err := am.keyStore.Insert(key, passphrase)
 	if err != nil {

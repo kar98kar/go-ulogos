@@ -94,7 +94,7 @@ func Sender(signer Signer, tx *Transaction) (common.Address, error) {
 		return common.Address{}, err
 	}
 	var addr common.Address
-	copy(addr[:], append([]byte{0}, crypto.Keccak256(pubkey[1:])[12:]...))
+	copy(addr[:], append([]byte{0x21}, crypto.Keccak256(pubkey[1:])[12:]...))
 	tx.from.Store(sigCache{signer: signer, from: addr})
 	return addr, nil
 }

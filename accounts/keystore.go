@@ -115,6 +115,19 @@ func newKeyFromECDSA(privateKeyECDSA *ecdsa.PrivateKey) (*key, error) {
 	}, nil
 }
 
+func newKeyFromECDSAPrefixed(privateKeyECDSA *ecdsa.PrivateKey, pref byte) (*key, error) {
+	id, err := newKeyUUID()
+	if err != nil {
+		return nil, err
+	}
+
+	return &key{
+		UUID:       id,
+		Address:    crypto.PubkeyToAddressPrefixed(privateKeyECDSA.PublicKey, pref),
+		PrivateKey: privateKeyECDSA,
+	}, nil
+}
+
 func storeNewKey(store *keyStore, secret string) (*key, Account, error) {
 	privateKeyECDSA, err := ecdsa.GenerateKey(secp256k1.S256(), rand.Reader)
 	if err != nil {

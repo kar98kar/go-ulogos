@@ -28,6 +28,7 @@ import (
 	"math/big"
 
 	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/ethereumproject/go-ethereum/crypto/chainhash"
 	"github.com/ethereumproject/go-ethereum/crypto/ecies"
 	"github.com/ethereumproject/go-ethereum/crypto/secp256k1"
 	"github.com/ethereumproject/go-ethereum/crypto/sha3"
@@ -59,7 +60,7 @@ func Sha3Hash(data ...[]byte) common.Hash { return Keccak256Hash(data...) }
 // Creates an ethereum address given the bytes and the nonce
 func CreateAddress(b common.Address, nonce uint64) common.Address {
 	data, _ := rlp.EncodeToBytes([]interface{}{b, nonce})
-	return common.BytesToAddress(append([]byte{68}, Keccak256(data)[12:]...))
+	return common.BytesToAddress(append([]byte{0x44}, Keccak256(data)[12:]...))
 }
 
 func Sha256(data []byte) []byte {
@@ -206,7 +207,68 @@ func Decrypt(prv *ecdsa.PrivateKey, ct []byte) ([]byte, error) {
 
 func PubkeyToAddress(p ecdsa.PublicKey) common.Address {
 	pubBytes := FromECDSAPub(&p)
-	return common.BytesToAddress(append([]byte{0}, Keccak256(pubBytes[1:])[12:]...))
+	return common.BytesToAddress(append([]byte{0x21}, Keccak256(pubBytes[1:])[12:]...))
+}
+
+// Following code are modified from https://github.com/btcsuite/btcd.
+
+// These constants define the lengths of serialized public keys.
+const (
+	PubKeyBytesLenCompressed   = 33
+	PubKeyBytesLenUncompressed = 65
+	// PubKeyBytesLenHybrid       = 65
+)
+
+const (
+	pubkeyCompressed   byte = 0x2 // y_bit + x coord
+	pubkeyUncompressed byte = 0x4 // x coord + y coord
+	// pubkeyHybrid       byte = 0x6 // y_bit + x coord + y coord
+)
+
+// SerializeUncompressed serializes a public key in a 65-byte uncompressed
+// format.
+func SerializeUncompressed(p *ecdsa.PublicKey) []byte {
+	b := make([]byte, 0, PubKeyBytesLenUncompressed)
+	b = append(b, pubkeyUncompressed)
+	b = paddedAppend(32, b, p.X.Bytes())
+	return paddedAppend(32, b, p.Y.Bytes())
+}
+
+// SerializeCompressed serializes a public key in a 33-byte compressed format.
+func SerializeCompressed(p *ecdsa.PublicKey) []byte {
+	b := make([]byte, 0, PubKeyBytesLenCompressed)
+	format := pubkeyCompressed
+	if isOdd(p.Y) {
+		format |= 0x1
+	}
+	b = append(b, format)
+	return paddedAppend(32, b, p.X.Bytes())
+}
+
+func PubkeyToAddressPrefixed(p ecdsa.PublicKey, pref byte) common.Address {
+	if pref == 0x01 {
+		pubBytes := SerializeCompressed(&p)
+
+		return common.BytesToAddress(append([]byte{0x01}, chainhash.Hash160(pubBytes)...))
+	} else {
+		pubBytes := SerializeUncompressed(&p)
+
+		return common.BytesToAddress(append([]byte{0x00}, chainhash.Hash160(pubBytes)...))
+	}
+}
+
+func isOdd(a *big.Int) bool {
+	return a.Bit(0) == 1
+}
+
+// paddedAppend appends the src byte slice to dst, returning the new slice.
+// If the length of the source is smaller than the passed size, leading zero
+// bytes are appended to the dst slice before appending src.
+func paddedAppend(size uint, dst, src []byte) []byte {
+	for i := 0; i < int(size)-len(src); i++ {
+		dst = append(dst, 0)
+	}
+	return append(dst, src...)
 }
 
 func zeroBytes(bytes []byte) {

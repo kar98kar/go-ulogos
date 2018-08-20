@@ -58,7 +58,7 @@ func TestKeyStore(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := ks.Lookup(account.File, pass)
+	got, err := ks.Lookup(account.File, pass, 0x21)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestKeyStoreDecryptionFail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = ks.Lookup(account.File, "bar"); err != ErrDecrypt {
+	if _, err = ks.Lookup(account.File, "bar", 0x21); err != ErrDecrypt {
 		t.Fatalf("wrong error for invalid passphrase\ngot %q\nwant %q", err, ErrDecrypt)
 	}
 }
@@ -168,7 +168,7 @@ func TestV1_2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	key, err := store.Lookup("cb61d5a9c4896fb9658090b597ef0e7be6f7b67e/cb61d5a9c4896fb9658090b597ef0e7be6f7b67e", "g")
+	key, err := store.Lookup("cb61d5a9c4896fb9658090b597ef0e7be6f7b67e/cb61d5a9c4896fb9658090b597ef0e7be6f7b67e", "g", 0x21)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,16 +274,16 @@ func TestKeyEncryptDecrypt(t *testing.T) {
 		t.Fatal(err)
 	}
 	password := ""
-	address := common.HexToAddress("45dea0fb0bba44f4fcf290bba71fd57d7117cbb8")
+	address := common.HexToAddress("0x2145dea0fb0bba44f4fcf290bba71fd57d7117cbb8")
 
 	// Do a few rounds of decryption and encryption
 	for i := 0; i < 3; i++ {
 		// try a bad password first
-		if _, err := decryptKey(keyjson, password+"bad"); err == nil {
+		if _, err := decryptKey(keyjson, password+"bad", 0x21); err == nil {
 			t.Errorf("test %d: json key decrypted with bad password", i)
 		}
 		// decrypt with the correct password
-		key, err := decryptKey(keyjson, password)
+		key, err := decryptKey(keyjson, password, 0x21)
 		if err != nil {
 			t.Errorf("test %d: json key failed to decrypt: %v", i, err)
 		}

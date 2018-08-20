@@ -266,9 +266,9 @@ func (am *Manager) getDecryptedKey(a Account, auth string) (Account, *key, error
 
 	key := &key{}
 	if a.EncryptedKey != "" {
-		key, err = am.keyStore.DecryptKey([]byte(a.EncryptedKey), auth)
+		key, err = am.keyStore.DecryptKey([]byte(a.EncryptedKey), auth, a.Address[0])
 	} else {
-		key, err = am.keyStore.Lookup(a.File, auth)
+		key, err = am.keyStore.Lookup(a.File, auth, a.Address[0])
 	}
 
 	if err != nil {
@@ -334,7 +334,7 @@ func (am *Manager) Export(a Account, passphrase, newPassphrase string) (keyJSON 
 
 // Import stores the given encrypted JSON key into the key directory.
 func (am *Manager) Import(keyJSON []byte, passphrase, newPassphrase string) (Account, error) {
-	key, err := decryptKey(keyJSON, passphrase)
+	key, err := decryptKey(keyJSON, passphrase, 0x21) // dummy prefix
 	if key != nil && key.PrivateKey != nil {
 		defer zeroKey(key.PrivateKey)
 	}

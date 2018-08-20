@@ -171,15 +171,15 @@ func newKeyStore(dir string, scryptN, scryptP int) (*keyStore, error) {
 	}, nil
 }
 
-func (store *keyStore) DecryptKey(data []byte, secret string) (*key, error) {
-	key, err := decryptKey(data, secret)
+func (store *keyStore) DecryptKey(data []byte, secret string, pref byte) (*key, error) {
+	key, err := decryptKey(data, secret, pref)
 	if err != nil {
 		return nil, err
 	}
 	return key, nil
 }
 
-func (store *keyStore) Lookup(file string, secret string) (*key, error) {
+func (store *keyStore) Lookup(file string, secret string, pref byte) (*key, error) {
 	if !filepath.IsAbs(file) {
 		file = filepath.Join(store.baseDir, file)
 	}
@@ -189,7 +189,7 @@ func (store *keyStore) Lookup(file string, secret string) (*key, error) {
 		return nil, err
 	}
 
-	key, err := decryptKey(data, secret)
+	key, err := decryptKey(data, secret, pref)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func encryptKey(key *key, secret string, scryptN, scryptP int) ([]byte, error) {
 
 // Web3PrivateKey decrypts the record with secret and returns the private key.
 func Web3PrivateKey(web3JSON []byte, secret string) (*ecdsa.PrivateKey, error) {
-	k, err := decryptKey(web3JSON, secret)
+	k, err := decryptKey(web3JSON, secret, 0x21) // a dummy prefix since only the private key we care
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func Web3PrivateKey(web3JSON []byte, secret string) (*ecdsa.PrivateKey, error) {
 }
 
 // decryptKey decrypts a key from a JSON blob, returning the private key itself.
-func decryptKey(web3JSON []byte, secret string) (*key, error) {
+func decryptKey(web3JSON []byte, secret string, pref byte) (*key, error) {
 	// Parse the JSON into a simple map to fetch the key version
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(web3JSON, &m); err != nil {
@@ -350,11 +350,20 @@ func decryptKey(web3JSON []byte, secret string) (*key, error) {
 	}
 
 	k := crypto.ToECDSA(keyBytes)
-	return &key{
-		UUID:       keyUUID,
-		Address:    crypto.PubkeyToAddress(k.PublicKey),
-		PrivateKey: k,
-	}, nil
+	if pref == 0x21 {
+		return &key{
+			UUID:       keyUUID,
+			Address:    crypto.PubkeyToAddress(k.PublicKey),
+			PrivateKey: k,
+		}, nil
+	} else {
+		return &key{
+			UUID:       keyUUID,
+			Address:    crypto.PubkeyToAddressPrefixed(k.PublicKey, pref),
+			PrivateKey: k,
+		}, nil
+	}
+
 }
 
 func decryptKeyV3(keyProtected *web3v3, secret string) (keyBytes []byte, err error) {

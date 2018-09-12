@@ -17,13 +17,16 @@
 package common
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"math/rand"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -210,4 +213,274 @@ func PP(value []byte) string {
 	}
 
 	return fmt.Sprintf("%x...%x", value[:4], value[len(value)-4])
+}
+
+// CY
+func ReverseByByte(s string) string {
+	var str string
+	length := len(s)
+	for i := 0; (i * 2) < length; i++ {
+		str += string(s[length-i*2-2])
+		str += string(s[length-i*2-1])
+	}
+	return str
+}
+
+// CY
+func ConvertHexToByte(str string) Hash {
+	if (len(str)%2 != 0) || (len(str) > (2 * HashLength)) {
+		fmt.Println("Wrong format!")
+		return Hash{}
+	}
+	var result Hash
+	for i := 0; (i * 2) < len(str); i++ {
+		b, _ := strconv.ParseInt(str[2*i:2*i+2], 16, 9)
+		result[i] = byte(b)
+	}
+	return result
+}
+
+// DoubleHashH calculates hash(hash(b)) and returns the resulting bytes as a
+// Hash.
+func DoubleHashH(b []byte) Hash {
+	first := sha256.Sum256(b)
+	return Hash(sha256.Sum256(first[:]))
+}
+
+// HashMerkleBranches takes two hashes, treated as the left and right tree
+// nodes, and returns the hash of their concatenation.  This is a helper
+// function used to aid in the generation of a merkle tree.
+func HashMerkleBranches(left *Hash, right *Hash) *Hash {
+	// Concatenate the left and right nodes.
+	var hash [HashLength * 2]byte
+	copy(hash[:HashLength], left[:])
+	copy(hash[HashLength:], right[:])
+
+	newHash := DoubleHashH(hash[:])
+	return &newHash
+}
+
+/* This implements a constant-space merkle root/path calculator, limited to 2^32 leaves. */
+func MerkleComputation(leaves []Hash, proot *Hash, pmutated *bool, branchpos uint32, pbranch *[]Hash) error {
+	if pbranch != nil {
+		*pbranch = []Hash{}
+	}
+	ll := len(leaves)
+	lenleaves := uint32(ll)
+	if lenleaves == 0 {
+		if pmutated != nil {
+			*pmutated = false
+		}
+		if proot != nil {
+			*proot = Hash{}
+		}
+		return fmt.Errorf("%s", "Length of leaves if 0")
+	}
+	mutated := false
+	// count is the number of leaves processed so far.
+	var count uint32
+	// inner is an array of eagerly computed subtree hashes, indexed by tree
+	// level (0 being the leaves).
+	// For example, when count is 25 (11001 in binary), inner[4] is the hash of
+	// the first 16 leaves, inner[3] of the next 8 leaves, and inner[0] equal to
+	// the last leaf. The other inner entries are undefined.
+	var inner [32]Hash
+	// Which position in inner is a hash that depends on the matching leaf.
+	matchlevel := -1
+	// First process all leaves into 'inner' values.
+	for count < lenleaves {
+		h := leaves[count]
+		matchh := count == branchpos
+		count++
+		var level uint32
+		// For each of the lower bits in count that are 0, do 1 step. Each
+		// corresponds to an inner value that existed before processing the
+		// current leaf, and each needs a hash to combine it.
+		for level = 0; (count & (1 << level)) == 0; level++ {
+			if pbranch != nil {
+				if matchh {
+					*pbranch = append(*pbranch, inner[level])
+				} else if matchlevel == int(level) {
+					*pbranch = append(*pbranch, h)
+					matchh = true
+				}
+			}
+			if inner[level] == h {
+				mutated = true
+			}
+			h = *HashMerkleBranches(&inner[level], &h)
+		}
+		// Store the resulting hash at inner position level.
+		inner[level] = h
+		if matchh {
+			matchlevel = int(level)
+		}
+	}
+	// Do a final 'sweep' over the rightmost branch of the tree to process
+	// odd levels, and reduce everything to a single top value.
+	// Level is the level (counted from the bottom) up to which we've sweeped.
+	var level uint32
+	// As long as bit number level in count is zero, skip it. It means there
+	// is nothing left at this level.
+	for (count & (1 << level)) == 0 {
+		level++
+	}
+	h := inner[level]
+	matchh := matchlevel == int(level)
+	for count != (1 << level) {
+		// If we reach this point, h is an inner value that is not the top.
+		// We combine it with itself (Bitcoin's special rule for odd levels in
+		// the tree) to produce a higher level one.
+		if (pbranch != nil) && matchh {
+			*pbranch = append(*pbranch, h)
+		}
+		h = *HashMerkleBranches(&h, &h)
+		// forRootHash = h
+		// Increment count to the value it would have if two entries at this
+		// level had existed.
+		count += (1 << level)
+		level++
+		// And propagate the result upwards accordingly.
+		for (count & (1 << level)) == 0 {
+			if pbranch != nil {
+				if matchh {
+					*pbranch = append(*pbranch, inner[level])
+				} else if matchlevel == int(level) {
+					*pbranch = append(*pbranch, h)
+					matchh = true
+				}
+			}
+			h = *HashMerkleBranches(&inner[level], &h)
+			level++
+		}
+	}
+	// Return result.
+	if pmutated != nil {
+		*pmutated = mutated
+	}
+	if proot != nil {
+		*proot = h
+	}
+
+	return nil
+}
+
+func nextPowerOfTwo(n int) int {
+	// Return the number if it's already a power of 2.
+	if n&(n-1) == 0 {
+		return n
+	}
+
+	// Figure out and return the next power of two.
+	exponent := uint(math.Log2(float64(n))) + 1
+	return 1 << exponent // 2^exponent
+}
+
+func BuildMerkleTreeStore(transactions [][]byte) []*Hash {
+	// Calculate how many entries are required to hold the binary merkle
+	// tree as a linear array and create an array of that size.
+	nextPoT := nextPowerOfTwo(len(transactions))
+	arraySize := nextPoT*2 - 1
+	merkles := make([]*Hash, arraySize)
+
+	// Create the base transaction hashes and populate the array with them.
+	for i, tx := range transactions {
+		h := DoubleHashH(tx)
+		merkles[i] = &h
+	}
+
+	// Start the array offset after the last transaction and adjusted to the
+	// next power of two.
+	offset := nextPoT
+	for i := 0; i < arraySize-1; i += 2 {
+		switch {
+		// When there is no left child node, the parent is nil too.
+		case merkles[i] == nil:
+			merkles[offset] = nil
+
+		// When there is no right child, the parent is generated by
+		// hashing the concatenation of the left child with itself.
+		case merkles[i+1] == nil:
+			newHash := HashMerkleBranches(merkles[i], merkles[i])
+			merkles[offset] = newHash
+
+		// The normal case sets the parent node to the double sha256
+		// of the concatentation of the left and right children.
+		default:
+			newHash := HashMerkleBranches(merkles[i], merkles[i+1])
+			merkles[offset] = newHash
+		}
+		offset++
+	}
+
+	return merkles
+}
+
+func computeMerkleRoot(leaves []Hash, mutated *bool) Hash {
+	hash := Hash{}
+	MerkleComputation(leaves, &hash, mutated, 0xffffffff, nil)
+	return hash
+}
+
+func computeMerkleBranch(leaves []Hash, position uint32) []Hash {
+	var ret []Hash
+	MerkleComputation(leaves, nil, nil, position, &ret)
+	return ret
+}
+
+func ComputeMerkleRootFromBranch(leaf Hash, vMerkleBranch []Hash, nIndex uint32) Hash {
+	hash := leaf
+	for _, ele := range vMerkleBranch {
+		if (nIndex & 1) != 0 {
+			hash = *HashMerkleBranches(&ele, &hash)
+		} else {
+			hash = *HashMerkleBranches(&hash, &ele)
+		}
+		nIndex >>= 1
+	}
+	return hash
+}
+
+func Hash4mmMerkleRoot(txs [][]byte, mutated *bool) Hash {
+	var leaves []Hash
+	for _, ele := range txs {
+		leaves = append(leaves, DoubleHashH(ele))
+	}
+
+	return computeMerkleRoot(leaves, mutated)
+}
+
+func hash4mmWitnessMerkleRoot(txs [][]byte, mutated *bool) Hash {
+	var leaves []Hash
+	first := true
+	for _, ele := range txs {
+		if first {
+			leaves = append(leaves, Hash{})
+			first = false
+		} else {
+			leaves = append(leaves, DoubleHashH(ele))
+		}
+	}
+
+	return computeMerkleRoot(leaves, mutated)
+}
+
+func Hash4mmMerkleBranch(txs [][]byte, position uint32) []Hash {
+	var leaves []Hash
+	for _, ele := range txs {
+		leaves = append(leaves, DoubleHashH(ele))
+	}
+	return computeMerkleBranch(leaves, position)
+}
+
+type BitCoinHead struct {
+	Version      int32
+	PreviousHash string
+	MerkleRoot   string
+	CurTime      int64
+	Bits         string
+	Nonce        uint32
+	Coinbase     string
+	MerkleBranch []string
+	TxIndex      int32
 }

@@ -52,6 +52,7 @@ import (
 	"github.com/ethereumproject/go-ethereum/p2p"
 	"github.com/ethereumproject/go-ethereum/rlp"
 	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/ethereumproject/go-ethereum/util"
 )
 
 const defaultGas = uint64(90000)
@@ -230,6 +231,56 @@ func (s *PublicMinerAPI) GetWork() (work [3]string, err error) {
 	}
 	glog.V(logger.Debug).Infof("%v", err)
 	return work, fmt.Errorf("mining not ready")
+}
+
+func (s *PublicMinerAPI) Getauxblock() (auxResult util.AuxTask, err error) {
+	if !s.e.IsMining() {
+		if err = s.e.StartMining(0, ""); err != nil {
+			return
+		}
+	}
+	if auxResult, err = s.agent.GetAuxBlock(); err == nil {
+		return
+	}
+	glog.V(logger.Debug).Infof("%v", err)
+	return auxResult, fmt.Errorf("mining not ready")
+}
+
+func (s *PublicMinerAPI) Getauxblocksubmit(keyHash string, auxpow string) error {
+	ret := s.agent.SubmitWorkAux(common.HexToHash(keyHash), auxpow)
+	if !ret {
+		return fmt.Errorf("submit error")
+	}
+
+	return nil
+}
+
+func (s *PublicMinerAPI) Getsubauxblock(sub string) (subAuxResult util.SubAuxTask, err error) {
+	// glog.V(logger.Info).Infof("111111111111\n")
+	if !s.e.IsMining() {
+		// glog.V(logger.Info).Infof("2222222222222222\n")
+		if err = s.e.StartMining(0, ""); err != nil {
+			// glog.V(logger.Info).Infof("3333333333333333\n")
+			return
+		}
+	}
+	// glog.V(logger.Info).Infof("44444444444444444\n")
+	if subAuxResult, err = s.agent.GetSubAuxBlock(); err == nil {
+		// glog.V(logger.Info).Infof("555555555555555\n")
+		return
+	}
+	glog.V(logger.Debug).Infof("%v", err)
+	// glog.V(logger.Info).Infof("666666666666666666\n")
+	return subAuxResult, fmt.Errorf("mining not ready")
+}
+
+func (s *PublicMinerAPI) Getsubauxblocksubmit(keyHash string, auxpow string, subpow string) error {
+	ret := s.agent.SubmitWorkSubAux(common.HexToHash(keyHash), auxpow, subpow)
+	if !ret {
+		return fmt.Errorf("submit error")
+	}
+
+	return nil
 }
 
 // SubmitHashrate can be used for remote miners to submit their hash rate. This enables the node to report the combined

@@ -24,9 +24,11 @@ import (
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/core/state"
 	"github.com/ethereumproject/go-ethereum/core/types"
+	"github.com/ethereumproject/go-ethereum/logger"
 	"github.com/ethereumproject/go-ethereum/logger/glog"
 	"github.com/ethereumproject/go-ethereum/pow"
 	"gopkg.in/fatih/set.v0"
+	"github.com/ethereumproject/go-ethereum/util"
 )
 
 var (
@@ -257,12 +259,61 @@ func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, pare
 
 	if checkPow {
 		// Verify the nonce of the header. Return an error if it's not valid
-		if !pow.Verify(types.NewBlockWithHeader(header)) {
+		// if !pow.Verify(types.NewBlockWithHeader(header)) {
+		// 	return &BlockNonceErr{header.Number, header.Hash(), header.Nonce.Uint64()}
+		// }
+		if !AuxVerify(header) {
 			return &BlockNonceErr{header.Number, header.Hash(), header.Nonce.Uint64()}
 		}
 	}
 	// If all checks passed, validate the extra-data field for hard forks
 	return nil
+}
+
+func AuxVerify(header *types.Header) bool {
+	// diff
+	difficulty := header.Difficulty
+	if difficulty.Cmp(common.Big0) == 0 {
+		glog.V(logger.Debug).Infof("invalid block difficulty")
+		return false
+	}
+
+	// auxpow && subauxpow
+	if len(header.Auxpow) == 0 {
+		glog.V(logger.Debug).Infof("only support aux pow")
+		return false
+	}
+
+	auxHead := util.NewAuxHead()
+	err := auxHead.Init(header.Auxpow)
+	if err != nil {
+		glog.V(logger.Info).Infof("init auxhead failed")
+	}
+
+	keyHash := header.HashNoNonce()
+	keyHashStr := fmt.Sprintf("%x", keyHash)
+	if len(header.SubAuxpow) != 0 {
+		subAuxHead := util.NewSubAuxHead()
+		subAuxHead.Init(header.SubAuxpow)
+		var subids []int
+		for _, v := range header.SubChainID {
+			subids = append(subids, int(v))
+		}
+		keyHashStr, err = subAuxHead.GetAuxPowKey(keyHashStr, subids)
+		if err != nil {
+			glog.V(logger.Info).Infof("pow check failed with[%v]", err)
+			return false
+		}
+	}
+
+	err = auxHead.Verify(keyHashStr, util.BigToCompact(header.Difficulty), int(header.ChainID))
+	if err != nil {
+		glog.V(logger.Info).Infof("pow check failed with[%v]", err)
+		fmt.Printf("aux pow check failed\n")
+		return false
+	}
+
+	return true
 }
 
 // CalcDifficulty is the difficulty adjustment algorithm. It returns
@@ -279,8 +330,8 @@ func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, 
 
 	f, fork, configured := config.GetFeature(num, "difficulty")
 	if !configured {
-		return calcDifficultyFrontier(time, parentTime, parentNumber, parentDiff)
-	}
+		// return calcDifficultyFrontier(time, parentTime, parentNumber, parentDiff)
+		return calcDifficultyFrontierCY(time, parentTime, parentNumber, parentDiff)	}
 	name, ok := f.GetString("type")
 	if !ok {
 		name = ""
@@ -523,6 +574,40 @@ func calcDifficultyFrontier(time, parentTime uint64, parentNumber, parentDiff *b
 		diff.Add(diff, expDiff)
 		diff = common.BigMax(diff, MinimumDifficulty)
 	}
+
+	return diff
+}
+
+func calcDifficultyFrontierCY(time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
+	diff := new(big.Int)
+	adjust := new(big.Int).Div(parentDiff, DifficultyBoundDivisor)
+	bigTime := new(big.Int)
+	bigParentTime := new(big.Int)
+
+	bigTime.SetUint64(time)
+	bigParentTime.SetUint64(parentTime)
+
+	if bigTime.Sub(bigTime, bigParentTime).Cmp(DurationLimit) >= 0 {
+		diff.Add(parentDiff, adjust)
+	} else {
+		diff.Sub(parentDiff, adjust)
+	}
+
+	miniDifficulty := util.CompactToBig(0x207fffff)
+	if diff.Cmp(miniDifficulty) >= 0 {
+		fmt.Printf("use easiest difficulty!\n")
+		diff.Set(miniDifficulty)
+	}
+
+	periodCount := new(big.Int).Add(parentNumber, common.Big1)
+	periodCount.Div(periodCount, ExpDiffPeriod)
+	if periodCount.Cmp(common.Big1) > 0 {
+		expDiff := periodCount.Sub(periodCount, common.Big2)
+		expDiff.Exp(common.Big2, expDiff, nil)
+		diff.Add(diff, expDiff)
+		diff = common.BigMax(diff, MinimumDifficulty)
+	}
+	// fmt.Printf("difficulty:[%x]\n", diff)
 
 	return diff
 }

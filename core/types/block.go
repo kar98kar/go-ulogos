@@ -31,6 +31,8 @@ import (
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/crypto/sha3"
 	"github.com/ethereumproject/go-ethereum/rlp"
+
+	"github.com/ethereumproject/go-ethereum/util"
 )
 
 // HeaderExtraMax is the byte size limit for Header.Extra.
@@ -70,7 +72,13 @@ type Header struct {
 	Time        *big.Int       // Creation time
 	Extra       []byte         // Freeform descriptor
 	MixDigest   common.Hash    // for quick difficulty verification
+	ChainID     uint           // CY added for aux pow, include in no nonce hash
+	SubChainID  []uint         // CY added for sub aux pow, include in no nonce hash
 	Nonce       BlockNonce
+
+	// CY added for aux
+	Auxpow    []byte
+	SubAuxpow []byte
 }
 
 func (h *Header) Hash() common.Hash {
@@ -92,6 +100,8 @@ func (h *Header) HashNoNonce() common.Hash {
 		h.GasUsed,
 		h.Time,
 		h.Extra,
+		h.ChainID,    // CY
+		h.SubChainID, //CY
 	})
 }
 
@@ -335,6 +345,11 @@ func (b *Block) ReceiptHash() common.Hash { return b.header.ReceiptHash }
 func (b *Block) UncleHash() common.Hash   { return b.header.UncleHash }
 func (b *Block) Extra() []byte            { return common.CopyBytes(b.header.Extra) }
 
+func (b *Block) ChainID() uint      { return b.header.ChainID }
+func (b *Block) SubChainID() []uint { return b.header.SubChainID }
+func (b *Block) Auxpow() []byte     { return common.CopyBytes(b.header.Auxpow) }
+func (b *Block) SubAuxpow() []byte  { return common.CopyBytes(b.header.SubAuxpow) }
+
 func (b *Block) Header() *Header { return CopyHeader(b.header) }
 
 // Body returns the non-header content of the block.
@@ -376,6 +391,58 @@ func (b *Block) WithMiningResult(nonce uint64, mixDigest common.Hash) *Block {
 		transactions: b.transactions,
 		uncles:       b.uncles,
 	}
+}
+
+func (b *Block) WithMiningResultAuxpow(keyHash common.Hash, auxpow string) (*Block, error) {
+	cpy := *b.header
+
+	auxHead := util.NewAuxHead()
+	auxHead.Init(common.Hex2Bytes(auxpow))
+
+	err := auxHead.Verify(fmt.Sprintf("%x", keyHash), util.BigToCompact(cpy.Difficulty), int(cpy.ChainID))
+	if err != nil {
+		return nil, err
+	}
+
+	//
+	cpy.Auxpow = common.Hex2Bytes(auxpow)
+	// binary.BigEndian.PutUint64(cpy.Nonce[:], nonce)
+	cpy.MixDigest = common.Hash{}
+	return &Block{
+		header:       &cpy,
+		transactions: b.transactions,
+		uncles:       b.uncles,
+	}, nil
+}
+
+func (b *Block) WithMiningResultSubAuxpow(keyHash common.Hash, auxpow string, subAuxpow string) (*Block, error) {
+	cpy := *b.header
+
+	auxHead := util.NewAuxHead()
+	auxHead.Init(common.Hex2Bytes(auxpow))
+	subAuxHead := util.NewSubAuxHead()
+	subAuxHead.Init(common.Hex2Bytes(subAuxpow))
+
+	// verify sub aux pow and get the new key
+	var subids []int
+	for _, v := range cpy.SubChainID {
+		subids = append(subids, int(v))
+	}
+	auxPowKey, err := subAuxHead.GetAuxPowKey(fmt.Sprintf("%x", keyHash), subids)
+
+	err = auxHead.Verify(auxPowKey, util.BigToCompact(cpy.Difficulty), int(cpy.ChainID))
+	if err != nil {
+		return nil, err
+	}
+
+	cpy.Auxpow = common.Hex2Bytes(auxpow)
+	cpy.SubAuxpow = common.Hex2Bytes(subAuxpow)
+	cpy.MixDigest = common.Hash{}
+	return &Block{
+		header:       &cpy,
+		transactions: b.transactions,
+		uncles:       b.uncles,
+	}, nil
 }
 
 // WithBody returns a new block with the given transaction and uncle contents.

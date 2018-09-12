@@ -18,7 +18,9 @@ package miner
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -27,6 +29,7 @@ import (
 	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/ethereumproject/go-ethereum/logger"
 	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/ethereumproject/go-ethereum/util"
 )
 
 type hashrate struct {
@@ -120,12 +123,66 @@ func (a *RemoteAgent) GetWork() ([3]string, error) {
 		n.Lsh(n, 255)
 		n.Div(n, block.Difficulty())
 		n.Lsh(n, 1)
-		res[2] = common.BytesToHash(n.Bytes()).Hex()
+		// res[2] = common.BytesToHash(n.Bytes()).Hex()
+
+		newTargetBits := util.BigToCompact(block.Difficulty())
+		fmt.Printf("NewTargetBits:[%v]\n", newTargetBits)
+		res[2] = strconv.Itoa(int(newTargetBits))
 
 		a.work[block.HashNoNonce()] = a.currentWork
 		return res, nil
 	}
 	return res, errors.New("No work available yet, don't panic.")
+}
+
+func (a *RemoteAgent) GetAuxBlock() (util.AuxTask, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	var auxResult util.AuxTask
+	if a.currentWork != nil {
+		block := a.currentWork.Block
+		newTargetBits := util.BigToCompact(block.Difficulty())
+		auxResult.Hash = fmt.Sprintf("%x", block.HashNoNonce())
+		auxResult.Chainid = int(block.Header().ChainID)
+		auxResult.Previousblockhash = fmt.Sprintf("%x", common.Hash{})
+		auxResult.Coinbasevalue = 0
+		auxResult.Bits = fmt.Sprintf("%x", newTargetBits)
+		auxResult.Height = 1
+		auxResult.Target = util.ReverseByByte(fmt.Sprintf("%0.64x", util.CompactToBig(newTargetBits)))
+		fmt.Printf("NewTargetBits:[%v]\n", newTargetBits)
+
+		a.work[block.HashNoNonce()] = a.currentWork
+
+		return auxResult, nil
+	}
+	return auxResult, errors.New("no work available yet, don't panic")
+}
+
+func (a *RemoteAgent) GetSubAuxBlock() (util.SubAuxTask, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	var subAuxResult util.SubAuxTask
+	if a.currentWork != nil {
+		block := a.currentWork.Block
+		newTargetBits := util.BigToCompact(block.Difficulty())
+		subAuxResult.Hash = fmt.Sprintf("%x", block.HashNoNonce())
+		subAuxResult.Chainid = int(block.Header().ChainID)
+		for _, v := range block.Header().SubChainID {
+			subAuxResult.SubchainID = append(subAuxResult.SubchainID, int(v))
+		}
+		subAuxResult.Previousblockhash = fmt.Sprintf("%x", common.Hash{})
+		subAuxResult.Coinbasevalue = 0
+		subAuxResult.Bits = fmt.Sprintf("%x", newTargetBits)
+		subAuxResult.Height = 1
+		subAuxResult.Target = util.ReverseByByte(fmt.Sprintf("%0.64x", util.CompactToBig(newTargetBits)))
+
+		a.work[block.HashNoNonce()] = a.currentWork
+
+		return subAuxResult, nil
+	}
+	return subAuxResult, errors.New("no work available yet, don't panic")
 }
 
 // Returns true or false, but does not indicate if the PoW was correct
@@ -158,6 +215,56 @@ func (a *RemoteAgent) SubmitWork(nonce uint64, mixDigest, hash common.Hash) (exi
 
 	exists = false
 	return
+}
+
+func (a *RemoteAgent) SubmitWorkAux(hash common.Hash, auxpow string) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	// Make sure the work submitted is present
+	if a.work[hash] != nil {
+		block, err := a.work[hash].Block.WithMiningResultAuxpow(hash, auxpow)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+
+		a.returnCh <- &Result{a.work[hash], block}
+
+		delete(a.work, hash)
+
+		return true
+	} else {
+		glog.V(logger.Info).Infof("Work was submitted for %x but no pending work found\n", hash)
+	}
+
+	return false
+
+}
+
+func (a *RemoteAgent) SubmitWorkSubAux(hash common.Hash, auxpow string, subAuxpow string) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	// Make sure the work submitted is present
+	if a.work[hash] != nil {
+		block, err := a.work[hash].Block.WithMiningResultSubAuxpow(hash, auxpow, subAuxpow)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+
+		a.returnCh <- &Result{a.work[hash], block}
+
+		delete(a.work, hash)
+
+		return true
+	} else {
+		glog.V(logger.Info).Infof("Work was submitted for %x but no pending work found\n", hash)
+	}
+
+	return false
+
 }
 
 func (a *RemoteAgent) maintainLoop() {

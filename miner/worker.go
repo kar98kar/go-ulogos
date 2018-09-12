@@ -479,6 +479,8 @@ func (self *worker) commitNewWork() {
 		Coinbase:   self.coinbase,
 		Extra:      HeaderExtra,
 		Time:       big.NewInt(tstamp),
+		ChainID:    2748,
+		SubChainID: []uint{18182},
 	}
 	previous := self.current
 	// Could potentially happen if starting to mine in an odd state.

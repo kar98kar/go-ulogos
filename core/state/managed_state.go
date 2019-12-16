@@ -19,7 +19,7 @@ package state
 import (
 	"sync"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 type account struct {

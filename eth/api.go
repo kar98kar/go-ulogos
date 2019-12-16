@@ -32,27 +32,27 @@ import (
 	"time"
 
 	"github.com/ethereumproject/ethash"
-	"github.com/ethereumproject/go-ethereum/accounts"
-	"github.com/ethereumproject/go-ethereum/accounts/base58"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/common/compiler"
-	"github.com/ethereumproject/go-ethereum/common/hexutil"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/crypto/chainhash"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/event"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	ethMetrics "github.com/ethereumproject/go-ethereum/metrics"
-	"github.com/ethereumproject/go-ethereum/miner"
-	"github.com/ethereumproject/go-ethereum/p2p"
-	"github.com/ethereumproject/go-ethereum/rlp"
-	"github.com/ethereumproject/go-ethereum/rpc"
-	"github.com/ethereumproject/go-ethereum/util"
+	"github.com/kar98kar/go-ulogos/accounts"
+	"github.com/kar98kar/go-ulogos/accounts/base58"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/common/compiler"
+	"github.com/kar98kar/go-ulogos/common/hexutil"
+	"github.com/kar98kar/go-ulogos/core"
+	"github.com/kar98kar/go-ulogos/core/state"
+	"github.com/kar98kar/go-ulogos/core/types"
+	"github.com/kar98kar/go-ulogos/core/vm"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/crypto/chainhash"
+	"github.com/kar98kar/go-ulogos/ethdb"
+	"github.com/kar98kar/go-ulogos/event"
+	"github.com/kar98kar/go-ulogos/logger"
+	"github.com/kar98kar/go-ulogos/logger/glog"
+	ethMetrics "github.com/kar98kar/go-ulogos/metrics"
+	"github.com/kar98kar/go-ulogos/miner"
+	"github.com/kar98kar/go-ulogos/p2p"
+	"github.com/kar98kar/go-ulogos/rlp"
+	"github.com/kar98kar/go-ulogos/rpc"
+	"github.com/kar98kar/go-ulogos/util"
 )
 
 const defaultGas = uint64(90000)
@@ -662,14 +662,14 @@ type PublicBlockChainAPI struct {
 // NewPublicBlockChainAPI creates a new Etheruem blockchain API.
 func NewPublicBlockChainAPI(config *core.ChainConfig, bc *core.BlockChain, m *miner.Miner, chainDb ethdb.Database, gpo *GasPriceOracle, eventMux *event.TypeMux, am *accounts.Manager) *PublicBlockChainAPI {
 	api := &PublicBlockChainAPI{
-		config:   config,
-		bc:       bc,
-		miner:    m,
-		chainDb:  chainDb,
-		eventMux: eventMux,
-		am:       am,
+		config:                config,
+		bc:                    bc,
+		miner:                 m,
+		chainDb:               chainDb,
+		eventMux:              eventMux,
+		am:                    am,
 		newBlockSubscriptions: make(map[string]func(core.ChainEvent) error),
-		gpo: gpo,
+		gpo:                   gpo,
 	}
 
 	go api.subscriptionLoop()
@@ -1847,7 +1847,7 @@ func (api *PublicGethAPI) GetAddressTransactions(address common.Address, blockSt
 	if atxi == nil {
 		return nil, errors.New("addr-tx indexing not enabled")
 	}
-	// Use human-friendly abbreviations, per https://github.com/ethereumproject/go-ethereum/pull/475#issuecomment-366065122
+	// Use human-friendly abbreviations, per https://github.com/kar98kar/go-ulogos/pull/475#issuecomment-366065122
 	// so 't' => to, 'f' => from, 'tf|ft' => either/both. Same pattern for txKindOf.
 	// _t_o OR _f_rom
 	if toOrFrom == "tf" || toOrFrom == "ft" {
@@ -2009,7 +2009,7 @@ func (api *PublicDebugAPI) SetHead(number uint64) (bool, error) {
 }
 
 // Metrics return all available registered metrics for the client.
-// See https://github.com/ethereumproject/go-ethereum/wiki/Metrics-and-Monitoring for prophetic documentation.
+// See https://github.com/kar98kar/go-ulogos/wiki/Metrics-and-Monitoring for prophetic documentation.
 func (api *PublicDebugAPI) Metrics(raw bool) (map[string]interface{}, error) {
 
 	// Create a rate formatter

@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 func TestWatchNewFile(t *testing.T) {

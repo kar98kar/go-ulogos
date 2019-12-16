@@ -23,9 +23,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/event"
+	"github.com/kar98kar/go-ulogos/core"
+	"github.com/kar98kar/go-ulogos/core/vm"
+	"github.com/kar98kar/go-ulogos/event"
 )
 
 // FilterType determines the type of filter and is used to put the filter in to

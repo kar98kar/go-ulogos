@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/kar98kar/go-ulogos/rpc"
 )
 
 const errorMsg = "client returned error"

@@ -21,8 +21,8 @@ import (
 
 	"strconv"
 
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/kar98kar/go-ulogos/logger"
+	"github.com/kar98kar/go-ulogos/logger/glog"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/filter"

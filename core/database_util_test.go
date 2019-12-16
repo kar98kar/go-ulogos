@@ -30,13 +30,13 @@ import (
 	"encoding/binary"
 	"strings"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/crypto/sha3"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/rlp"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/core/types"
+	"github.com/kar98kar/go-ulogos/core/vm"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/crypto/sha3"
+	"github.com/kar98kar/go-ulogos/ethdb"
+	"github.com/kar98kar/go-ulogos/rlp"
 )
 
 type diffTest struct {

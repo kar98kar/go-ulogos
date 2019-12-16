@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 func readBlockHeader(r io.Reader, pver uint32, bh *BitcoinBlockHeader) error {
@@ -110,6 +110,7 @@ type uint32Time time.Time
 type binaryFreeList chan []byte
 
 const binaryFreeListMaxItems = 1024
+
 var binarySerializer binaryFreeList = make(chan []byte, binaryFreeListMaxItems)
 
 var (

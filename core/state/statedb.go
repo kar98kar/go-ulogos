@@ -23,13 +23,13 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/rlp"
-	"github.com/ethereumproject/go-ethereum/trie"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/core/vm"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/logger"
+	"github.com/kar98kar/go-ulogos/logger/glog"
+	"github.com/kar98kar/go-ulogos/rlp"
+	"github.com/kar98kar/go-ulogos/trie"
 )
 
 // The starting nonce determines the default nonce when new accounts are being

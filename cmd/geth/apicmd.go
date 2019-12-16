@@ -27,8 +27,8 @@ import (
 
 	"os"
 
-	"github.com/ethereumproject/go-ethereum/node"
-	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/kar98kar/go-ulogos/node"
+	"github.com/kar98kar/go-ulogos/rpc"
 )
 
 var (

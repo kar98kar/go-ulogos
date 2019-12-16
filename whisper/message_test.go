@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/crypto/secp256k1"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/crypto/secp256k1"
 )
 
 // Tests whether a message can be wrapped without any identity or encryption.

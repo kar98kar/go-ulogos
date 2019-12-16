@@ -19,7 +19,7 @@ package discover
 import (
 	"sort"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 // node distance computation.

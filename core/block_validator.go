@@ -21,14 +21,14 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/pow"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/core/state"
+	"github.com/kar98kar/go-ulogos/core/types"
+	"github.com/kar98kar/go-ulogos/logger"
+	"github.com/kar98kar/go-ulogos/logger/glog"
+	"github.com/kar98kar/go-ulogos/pow"
+	"github.com/kar98kar/go-ulogos/util"
 	"gopkg.in/fatih/set.v0"
-	"github.com/ethereumproject/go-ethereum/util"
 )
 
 var (
@@ -331,7 +331,8 @@ func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, 
 	f, fork, configured := config.GetFeature(num, "difficulty")
 	if !configured {
 		// return calcDifficultyFrontier(time, parentTime, parentNumber, parentDiff)
-		return calcDifficultyFrontierCY(time, parentTime, parentNumber, parentDiff)	}
+		return calcDifficultyFrontierCY(time, parentTime, parentNumber, parentDiff)
+	}
 	name, ok := f.GetString("type")
 	if !ok {
 		name = ""

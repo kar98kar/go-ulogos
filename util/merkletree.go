@@ -3,7 +3,7 @@ package util
 import (
 	"crypto/sha256"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 func DoubleHashH(b []byte) common.Hash {

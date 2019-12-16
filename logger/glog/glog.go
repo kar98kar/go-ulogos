@@ -121,8 +121,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
 	"github.com/fatih/color"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 // DefaultVerbosity establishes the default verbosity Level for
@@ -227,7 +227,7 @@ var severityName = []string{
 // these path prefixes are trimmed for display, but not when
 // matching vmodule filters.
 var trimPrefixes = []string{
-	"/github.com/ethereumproject/go-ethereum",
+	"/github.com/kar98kar/go-ulogos",
 	"/github.com/ethereumproject/ethash",
 }
 

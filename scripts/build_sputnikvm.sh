@@ -13,7 +13,7 @@ fi
 
 OS=`uname -s`
 
-geth_path="github.com/ethereumproject/go-ethereum"
+geth_path="github.com/kar98kar/go-ulogos"
 sputnik_path="github.com/ethereumproject/sputnikvm-ffi"
 sputnik_dir="$GOPATH/src/$geth_path/vendor/$sputnik_path"
 

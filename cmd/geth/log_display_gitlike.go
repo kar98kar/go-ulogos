@@ -33,12 +33,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/eth"
-	"github.com/ethereumproject/go-ethereum/eth/downloader"
-	"github.com/ethereumproject/go-ethereum/eth/fetcher"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/kar98kar/go-ulogos/core"
+	"github.com/kar98kar/go-ulogos/eth"
+	"github.com/kar98kar/go-ulogos/eth/downloader"
+	"github.com/kar98kar/go-ulogos/eth/fetcher"
+	"github.com/kar98kar/go-ulogos/logger"
+	"github.com/kar98kar/go-ulogos/logger/glog"
 	"gopkg.in/urfave/cli.v1"
 )
 

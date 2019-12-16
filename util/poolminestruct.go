@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
-const MaxBlockHeaderPayload  = 16 + (common.HashLength * 2)
+const MaxBlockHeaderPayload = 16 + (common.HashLength * 2)
 
 type BitcoinBlockHeader struct {
 	Version    int32
@@ -139,4 +139,3 @@ type BBlockHeader struct {
 	// Nonce used to generate the block.
 	Nonce uint32
 }
-

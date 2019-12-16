@@ -9,12 +9,12 @@ sputnik_vm_steps: &sputnik_vm_steps
         command: |
           export GOPATH=$HOME/go
           export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin
-          cd $GOPATH/src/github.com/ethereumproject/go-ethereum
+          cd $GOPATH/src/github.com/kar98kar/go-ulogos
           make -C vendor/github.com/ethereumproject/sputnikvm-ffi/c
     - persist_to_workspace:
         root: ~/
         paths:
-          - go/src/github.com/ethereumproject/go-ethereum/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a
+          - go/src/github.com/kar98kar/go-ulogos/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a
 
 deploy_steps: &deploy_steps
   steps:
@@ -28,7 +28,7 @@ deploy_steps: &deploy_steps
           if [[ $CIRCLE_PROJECT_USERNAME != ethereumproject ]]; then echo "Deployments only enabled from ethereumproject/ repo. Exiting." && exit 0; fi
           export GOPATH=$HOME/go
           export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin
-          cd $GOPATH/src/github.com/ethereumproject/go-ethereum
+          cd $GOPATH/src/github.com/kar98kar/go-ulogos
           cp $GOPATH/bin/geth ./
           export VERSION=`janus version -format TAG_OR_NIGHTLY`
           ./geth version | awk '/^Version: /{if (ENVIRON["VERSION"] != $2){printf "Expected: \"%s\", got \"%s\"\n",ENVIRON["VERSION"], $2; exit 1}}'
@@ -47,12 +47,12 @@ unit_tests_steps: &unit_tests_steps
           export GOPATH=$HOME/go
           export GOBIN=$GOPATH/bin
           export PATH=$PATH:$GOBIN
-          export CGO_LDFLAGS="$GOPATH/src/github.com/ethereumproject/go-ethereum/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl"
+          export CGO_LDFLAGS="$GOPATH/src/github.com/kar98kar/go-ulogos/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl"
           if [ "$(uname)" == "Darwin" ]; then
             export CGO_LDFLAGS="$CGO_LDFLAGS -lresolv"
           fi
           export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin
-          cd $GOPATH/src/github.com/ethereumproject/go-ethereum
+          cd $GOPATH/src/github.com/kar98kar/go-ulogos
           go env
           go test -tags="sputnikvm netgo deterministic" ./...
           schroedinger -t 5 -f ./schroedinger-tests.txt
@@ -67,14 +67,14 @@ bats_tests_steps: &bats_tests_steps
           name: Run bats tests
           command: |
             export GOPATH=$HOME/go
-            export CGO_LDFLAGS="$GOPATH/src/github.com/ethereumproject/go-ethereum/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl"
+            export CGO_LDFLAGS="$GOPATH/src/github.com/kar98kar/go-ulogos/vendor/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl"
             if [ "$(uname)" == "Darwin" ]; then
               export CGO_LDFLAGS="$CGO_LDFLAGS -lresolv"
             else
               export EXT_LD_FLAGS="-extldflags=-static"
             fi
             export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin:$HOME/bin
-            cd $GOPATH/src/github.com/ethereumproject/go-ethereum
+            cd $GOPATH/src/github.com/kar98kar/go-ulogos
             # go install ... doesn't work with netgo on CircleCI on Linux
             go build -tags="sputnikvm netgo" -ldflags "$EXT_LD_FLAGS -X main.Version=`janus version -format TAG_OR_NIGHTLY`" ./cmd/geth
             mkdir -p $GOPATH/bin
@@ -100,7 +100,7 @@ jobs:
             export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin
             mkdir -p $GOPATH/src/github.com/ethereumproject
       - checkout:
-          path:  ~/go/src/github.com/ethereumproject/go-ethereum
+          path:  ~/go/src/github.com/kar98kar/go-ulogos
       - run:
           name: Install required software
           command: |
@@ -150,7 +150,7 @@ jobs:
             export PATH=$PATH:$HOME/.cargo/bin:$HOME/janusbin
             mkdir -p $GOPATH/src/github.com/ethereumproject
       - checkout:
-          path:  ~/go/src/github.com/ethereumproject/go-ethereum
+          path:  ~/go/src/github.com/kar98kar/go-ulogos
       - run:
           name: Install required software
           command: |

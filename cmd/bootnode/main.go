@@ -24,10 +24,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/p2p/discover"
-	"github.com/ethereumproject/go-ethereum/p2p/nat"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/logger/glog"
+	"github.com/kar98kar/go-ulogos/p2p/discover"
+	"github.com/kar98kar/go-ulogos/p2p/nat"
 )
 
 // Version is the application revision identifier. It can be set with the linker

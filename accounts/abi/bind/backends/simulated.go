@@ -19,13 +19,13 @@ package backends
 import (
 	"math/big"
 
-	"github.com/ethereumproject/go-ethereum/accounts/abi/bind"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/event"
+	"github.com/kar98kar/go-ulogos/accounts/abi/bind"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/core"
+	"github.com/kar98kar/go-ulogos/core/state"
+	"github.com/kar98kar/go-ulogos/core/types"
+	"github.com/kar98kar/go-ulogos/ethdb"
+	"github.com/kar98kar/go-ulogos/event"
 )
 
 // This nil assignment ensures compile time that SimulatedBackend implements bind.ContractBackend.

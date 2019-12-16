@@ -26,10 +26,10 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/crypto/ecies"
-	"github.com/ethereumproject/go-ethereum/rlp"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/crypto/ecies"
+	"github.com/kar98kar/go-ulogos/rlp"
 )
 
 // Envelope represents a clear-text data packet to transmit through the Whisper

@@ -27,10 +27,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ethereumproject/go-ethereum/internal/jsre"
-	"github.com/ethereumproject/go-ethereum/internal/web3ext"
-	"github.com/ethereumproject/go-ethereum/rpc"
 	"github.com/fatih/color"
+	"github.com/kar98kar/go-ulogos/internal/jsre"
+	"github.com/kar98kar/go-ulogos/internal/web3ext"
+	"github.com/kar98kar/go-ulogos/rpc"
 	"github.com/peterh/liner"
 	"github.com/robertkrimen/otto"
 )

@@ -29,11 +29,11 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/node"
-	"github.com/ethereumproject/go-ethereum/rpc"
 	"github.com/gizak/termui"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/logger/glog"
+	"github.com/kar98kar/go-ulogos/node"
+	"github.com/kar98kar/go-ulogos/rpc"
 	"gopkg.in/urfave/cli.v1"
 )
 

@@ -9,13 +9,13 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ethereumproject/go-ethereum/common"
-    "crypto/sha256"
+	"crypto/sha256"
 	"encoding/hex"
+	"github.com/kar98kar/go-ulogos/common"
 )
 
 const MaxMessagePayload = (1024 * 1024 * 32) // 32MB
-const MaxBlockPayload = 1000000 // Not actually 1MB which would be 1024 * 1024
+const MaxBlockPayload = 1000000              // Not actually 1MB which would be 1024 * 1024
 const HashSize = 32
 
 func DoubleHashHH(b []byte) chainHash {
@@ -24,12 +24,12 @@ func DoubleHashHH(b []byte) chainHash {
 }
 
 const (
-	minTxInPayload = 9 + common.HashLength
-	maxTxInPerMessage = (MaxMessagePayload / minTxInPayload) + 1
-	minTxOutPayload = 9
-	maxTxOutPerMessage = (MaxMessagePayload / minTxOutPayload) + 1
+	minTxInPayload        = 9 + common.HashLength
+	maxTxInPerMessage     = (MaxMessagePayload / minTxInPayload) + 1
+	minTxOutPayload       = 9
+	maxTxOutPerMessage    = (MaxMessagePayload / minTxOutPayload) + 1
 	freeListMaxScriptSize = 512
-	freeListMaxItems = 12500
+	freeListMaxItems      = 12500
 )
 
 type chainHash [HashSize]byte

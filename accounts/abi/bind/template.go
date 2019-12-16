@@ -16,7 +16,7 @@
 
 package bind
 
-import "github.com/ethereumproject/go-ethereum/accounts/abi"
+import "github.com/kar98kar/go-ulogos/accounts/abi"
 
 // tmplData is the data structure required to fill the binding template.
 type tmplData struct {

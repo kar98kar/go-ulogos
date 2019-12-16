@@ -29,9 +29,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/crypto/secp256k1"
+	"github.com/kar98kar/go-ulogos/common"
+	"github.com/kar98kar/go-ulogos/crypto"
+	"github.com/kar98kar/go-ulogos/crypto/secp256k1"
 )
 
 func tmpKeyStore(t *testing.T) (dir string, ks *keyStore) {
